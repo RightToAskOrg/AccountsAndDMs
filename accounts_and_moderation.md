@@ -96,4 +96,6 @@ Whilst a credit card is a strong identity check it is not practical for a settin
 #### *Device ID*
 Given the mobile nature of the service, in that it is currently only accessible via an app, it would be possible to use a device identifier. For example, `Settings.Secure.ANDROID_ID` is a device/application specific identifier. It remains the same between uninstall and reinstall if the package stays the same and the same signing key is used on the APK. The ID will reset during a factory reset. If combined with Android SafetyNet it would be possible to ensure that the device is not an emulator and is a genuine Android device. This would prevent automated generation of fake devices. It would require Google Play Services to be installed, but so would Firebase Cloud Messaging, so that might already be a requirement. 
 
+This may require an app permsission update if imposed later.
+
 A further downside would be if future expansion includes a web based version there would be no equivalent ID value. It would also not assist in account recovery.
