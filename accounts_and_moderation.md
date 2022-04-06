@@ -87,15 +87,22 @@ An email address can only work as a proxy if the email address is verified. Othe
 
 As a further note of caution, Gmail potentially allows an unlimited number of email addresses per user through the use of "+" addressing. This works by allowing anything to placed after the genuine address with a "+" symbol. For example, if the email account is joebloggs@gmail.com, then joebloggs+temp123@gmail.com, joebloggs+temp124@gmail.com and joebloggs+facebook@gmail.com are all legitimate aliases. As such, when checking for uniqueness of an email address it is important to consider such "+" addressing for Gmail and other providers.
 
-#### *Phone Number*
+##### *Phone Number*
 Phone number, in particular a mobile phone number, which can be verified via sending a one-time code, provides a high degree of identity verification. This is particularly so in Australia where there are strict identity checks on mobile phones. Apps like Signal use phone number as an identifier for individuals. There is a cost involved in sending verification messages and there could be some hesitation from individuals to share their phone number with a website. 
 
-#### *Credit Card*
+##### *Credit Card*
 Whilst a credit card is a strong identity check it is not practical for a setting which does not involve purchasing. 
 
-#### *Device ID*
+##### *Device ID*
 Given the mobile nature of the service, in that it is currently only accessible via an app, it would be possible to use a device identifier. For example, `Settings.Secure.ANDROID_ID` is a device/application specific identifier. It remains the same between uninstall and reinstall if the package stays the same and the same signing key is used on the APK. The ID will reset during a factory reset. If combined with Android SafetyNet it would be possible to ensure that the device is not an emulator and is a genuine Android device. This would prevent automated generation of fake devices. It would require Google Play Services to be installed, but so would Firebase Cloud Messaging, so that might already be a requirement. 
 
-This may require an app permsission update if imposed later.
+This may require an app permission update if imposed later.
 
 A further downside would be if future expansion includes a web based version there would be no equivalent ID value. It would also not assist in account recovery.
+
+### Direct Messages
+Direct messages will require reactive moderation as well as additional functionality to report the contents as the message in question will not normally be visible to a moderator. In order to counter any attempts to falsely claim a breach of policy, direct messages should be signed by the senders identity key, and thus provide non-repudiation. However, this doesn't prevent out of context complaints, i.e. taking one message out of a context and complaining about it. Moderators will not be able to access DMs directly, and if one party is claiming a breach using an out of context message then the only option to see the context is to provide the subject of the complaint the option to appeal and share their record of the discussion. 
+
+If parts of an exchange are shared with moderators there is a need to define a policy for how that information will be stored, retained, and potentially shared. In a worst case scenario - albeit one that is very unlikely - the contents of a message shared with moderators could become the subject of a criminal complaint and the only people with access could be the moderators. For example, if Person A complains about a DM Person B sent that breached the site policy on profanity Person B might be banned. If Person B appeals, and in doing so shares the full thread revealing Person A threatened person B or racially harassed them, then Person A would also get banned. Person B has still breached the policy, and even though there may have been extenuating circumstances, they may still be banned. The problem would occur if Person B subsequently makes a police complaint. Since Person B is banned they will be unable to access their account, and one would assume the app would fail to load, and thus they would not be able to view their messages. If we want them to be able to view previous messages without logging in that is going add complexity to the implementation. As such, we can assume they cannot access any part of the service, past or present, after a ban. They therefore no longer have access to the evidence of Person A's conduct. However, the moderators would have had access when Person B appealed their original ban. 
+
+The challenge this presents is deciding what to do with private correspondence sent to a moderator during an appeal or complaint. Should it be deleted when the appeal/complaint is finalised? Should it be retained for a period of time? What responsibility do the moderators have in reporting any potentially illegal content? As an example of clause see (https://twitter.com/en/privacy#chapter3.3)[https://twitter.com/en/privacy#chapter3.3]
