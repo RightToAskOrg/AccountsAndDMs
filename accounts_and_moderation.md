@@ -94,11 +94,16 @@ Phone number, in particular a mobile phone number, which can be verified via sen
 Whilst a credit card is a strong identity check it is not practical for a setting which does not involve purchasing. 
 
 ##### *Device ID*
-Given the mobile nature of the service, in that it is currently only accessible via an app, it would be possible to use a device identifier. For example, `Settings.Secure.ANDROID_ID` is a device/application specific identifier. It remains the same between uninstall and reinstall if the package stays the same and the same signing key is used on the APK. The ID will reset during a factory reset. If combined with Android SafetyNet it would be possible to ensure that the device is not an emulator and is a genuine Android device. This would prevent automated generation of fake devices. It would require Google Play Services to be installed, but so would Firebase Cloud Messaging, so that might already be a requirement. 
+Given the mobile nature of the service, in that it is currently only accessible via an app, it would be possible to use a device identifier. For example, `Settings.Secure.ANDROID_ID` is a device/application specific identifier. It remains the same between uninstall and reinstall if the package stays the same and the same signing key is used on the APK. See [Android blog](https://android-developers.googleblog.com/2017/04/changes-to-device-identifiers-in.html). The ID will reset during a factory reset. 
+
+If combined with Android SafetyNet it would be possible to ensure that the device is not an emulator and is a genuine Android device. This would prevent automated generation of fake devices. It would require Google Play Services to be installed, but so would Firebase Cloud Messaging, so that might already be a requirement. 
 
 This may require an app permission update if imposed later.
 
 A further downside would be if future expansion includes a web based version there would be no equivalent ID value. It would also not assist in account recovery.
+
+##### *Third part login*
+Could consider Xamarin.Essentials Web Authenticator. This allows server to use third-party auth e.g. Google, Apple, FB, MS. Upside: much harder for malicious actors to generate multiple different accounts. Downside: dependent on those third parties. Ideally we'd use them (or an email address) for account establishment at most, and then use the established public keys.
 
 ### Direct Messages
 Direct messages will require reactive moderation as well as additional functionality to report the contents as the message in question will not normally be visible to a moderator. In order to counter any attempts to falsely claim a breach of policy, direct messages should be signed by the senders identity key, and thus provide non-repudiation. However, this doesn't prevent out of context complaints, i.e. taking one message out of a context and complaining about it. Moderators will not be able to access DMs directly, and if one party is claiming a breach using an out of context message then the only option to see the context is to provide the subject of the complaint the option to appeal and share their record of the discussion. 
