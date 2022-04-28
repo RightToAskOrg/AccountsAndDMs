@@ -100,6 +100,8 @@ If combined with Android SafetyNet it would be possible to ensure that the devic
 
 This may require an app permission update if imposed later.
 
+iOS has a similar thing: [identifierForVendor](https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor) but apparently it resets when the user uninstalls and reinstalls the app. A better alternative is probably to store a unique ID in the keychain - we don't *think* this is going to be autodeleted when the app is uninstalled, but discussion is a [little unclear](https://developer.apple.com/forums/thread/72271) and [not getting clearer](https://developer.apple.com/forums/thread/36442). There's also a [device check](https://developer.apple.com/documentation/devicecheck). But overall keychain is probably the right choice.
+
 A further downside would be if future expansion includes a web based version there would be no equivalent ID value. It would also not assist in account recovery.
 
 ##### *Third part login*
