@@ -1,0 +1,22 @@
+It's not clear what we should do without Xamarin bindings for ElectionGuard.
+
+For the server, one option is (A) to keep using EG's guardians. We'd have to find three friends who'd be willing to 
+run Microsoft's (python-based) guardian services. They'd do partial decryption, then send to the server for
+elementwise multiplication. 
+
+Another option (B) is to find some completely different MPC library. Lots of options, most of them probably not
+really indended to be reliable for production.
+
+If we stick with (A), we probably end up with something a lot like ElectionGuard. On the one hand, possibly good
+because it might mean a degree of verifier compatibility. OTOH, we'd be stuck with prime fields instead of 
+elliptic curves, which is easy to understand but computationally intensive.
+
+Either way, we'd then have to find a C# (or C#-compatible library) that could do the ElGamal encryption (with 
+prime fields or elliptic curves) and ZKPs (though in the worst case we could probably implement the ZKPs ourselves).
+
+Wallach suggests HACL*, which ElectionGuard is also based on: https://hacl-star.github.io/Supported.html.
+I guess we'd build of their ECDH? Not clear. Also there are apparently Rust bindings, but these are not 
+attested to by the HACL* team. I don't fully understand if we can run a C library in C#.
+
+There's also BouncyCastle, which might have much of what we need. Already using it in the app for signatures. 
+
