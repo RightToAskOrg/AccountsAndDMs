@@ -20,3 +20,21 @@ attested to by the HACL* team. I don't fully understand if we can run a C librar
 
 There's also BouncyCastle, which might have much of what we need. Already using it in the app for signatures. 
 
+Update: Chris notes that this
+https://github.com/microsoft/electionguard-cpp/blob/7b681513f6661dfaff064bdc5e43ffaddc932072/bindings/netstandard/ElectionGuard/ElectionGuard.Encryption/NativeInterface.cs
+
+is still there, as a C# wrapper.
+
+What seems to have disappeared is this:
+https://github.com/microsoft/electionguard-cpp/blob/0bad662f3c6c32f4f7c257b2826d448930736594/bindings/netstandard/ElectionGuard/ElectionGuard.Shared/Election.cs
+
+So this
+https://github.com/microsoft/electionguard-cpp/tree/0bad662f3c6c32f4f7c257b2826d448930736594/bindings/netstandard/ElectionGuard
+needs to be recreated from
+https://github.com/microsoft/electionguard-cpp/tree/main/bindings/netstandard/ElectionGuard
+
+Another approach may be to use Bouncycastle:
+https://github.com/novotnyllc/bc-csharp/
+
+We could potentially use the very well-specified ZKPs in the ElectionGuard spec to make our own.
+
