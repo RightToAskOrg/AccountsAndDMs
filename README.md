@@ -47,10 +47,10 @@ This presents a fundamentally different problem as there is an ongoing synchroni
 
 ## Development Plan
 * Rely on platform backups initially to allow recovery after device loss.
-..* This should not require immediate changes unless EncryptedSharedPreferences are being used
-..* Some verification of Apple iOS backup is required
+  * This should not require immediate changes unless EncryptedSharedPreferences are being used
+  * Some verification of Apple iOS backup is required
 * When implementing DMs provide functionality for sending encrypted system messages.
 * When implementing Multiple Devices use the DM functionality to send configuration file changes after each update
-..* Implement configuration file synchronisation
-..* Multiple device implementation may also require signing/approval of new devices by existing devices prior to synchronisation
+  * Implement configuration file synchronisation
+  * Multiple device implementation may also require signing/approval of new devices by existing devices prior to synchronisation
 
