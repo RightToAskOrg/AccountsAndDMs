@@ -21,4 +21,4 @@ Chris suggests using an extra layer of indirection for uid. Have a 'handle' that
 
 What if people lose their keys? Maybe post new keys and active/inactive requests on the BB. It's not actually clear that we win much by making verification check the timestamps against the pub key changes. If you're trusting the server, nothing should be accepted from old keys; if you're not trusting the server then it could have delayed, faked the replacement key, or otherwise messed around.
 
-
+*** How are we going to sync upvote/dismiss votes across devices??
