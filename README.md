@@ -19,5 +19,6 @@ It's prob fine to leave DMs to 2.0, but it'd be nice to have a clear plan so we 
 
 Chris suggests using an extra layer of indirection for uid. Have a 'handle' that people make up themselves, and which has to be unique, and have a 'real' uid that's basically hidden from public view and which can't change, and is used on the server. Then people can change their handles AND their displaynames. Handles would have to be unique, but could be mutable; display names not necessarily. uids both unique and immutable. Possibly row number in the database - maybe this is already there by default?
 
-What if people lose their keys? Maybe post new keys and active/inactive requests on the BB.
+What if people lose their keys? Maybe post new keys and active/inactive requests on the BB. It's not actually clear that we win much by making verification check the timestamps against the pub key changes. If you're trusting the server, nothing should be accepted from old keys; if you're not trusting the server then it could have delayed, faked the replacement key, or otherwise messed around.
+
 
