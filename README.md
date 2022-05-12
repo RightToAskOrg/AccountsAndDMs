@@ -19,6 +19,22 @@ It's prob fine to leave DMs to 2.0, but it'd be nice to have a clear plan so we 
 
 Chris suggests using an extra layer of indirection for uid. Have a 'handle' that people make up themselves, and which has to be unique, and have a 'real' uid that's basically hidden from public view and which can't change, and is used on the server. Then people can change their handles AND their displaynames. Handles would have to be unique, but could be mutable; display names not necessarily. uids both unique and immutable. Possibly row number in the database - maybe this is already there by default?
 
+## UIDs
+The issue of UIDs can be a difficult one. Intuitively one can use a user provided UID, for example, a handle or email address. However, there is a general rule that any data provided by a user will at some point need to change, or at least the user will wish for it to change. Email address is an obvious one, as people move providers or employers and as such email is not suitable as a UID. Choosen screen names or handles can have a long lives, potentially for the entire rest of the persons life. However, there are numerous scenarios where a user may legitimately wish to change their screen name or handle. For example:
+* Following marriage or divorce if they used their surname in their screen name/handle
+* Change of work, i.e. a staffer for an MP may include the MP in their screen name/handle
+* Mistakes during registration, i.e. typos or unexpected concatenation that result in misunderstanding. For example, Experts Exchange which it is claimed changed its domain to add a hyphen Experts-Exchange after it became apparent people were reading it as ExpertSexChange. Something similar is likely to happen with screen names/handles
+* Moderation - if someone registers a name deemed inappropriate the moderation may occur after they have started posting/voting. Would that require their account to be deleted and all their posts? 
+
+Using a server generated UID, for example, ROWID if it is built-in, or an auto-incrementing primary key is advisable. This ID can then be used by DMs to ensure that even if people change their screen name/handle/email address the messages are consistently sent to the same account.
+
+### Uses of UID
+When recording whether a user has voted rather than storing the public key directly it would be better to store the UID and possible a KeyIndex if multiple keys are supported. In this way, an immediate check can be performed as to whether a user is entitled to still vote on a question. This would ensure in a multi-device setting a user cannot vote multiple times from different devices. The same would be true for flags. 
+
+Without using UID the public key will need to be checked against both the listed public key keys and then each account of each listed public key to ensure it is not from an account that has already voted. This would become prohibitively expensive as more people vote on a question. 
+
+Public Keys within a user object should be set as either Active or Inactive. The server should not accept posts from Inactive keys, this allowing a user to disable future posts from a key on a lost or stolen device without invalidating previous posts. Ideally a user should be able to set a key as active to inactive and back to active, to handle temporary loss - although this would be a more advanced feature.
+
 What if people lose their keys? Maybe post new keys and active/inactive requests on the BB. It's not actually clear that we win much by making verification check the timestamps against the pub key changes. If you're trusting the server, nothing should be accepted from old keys; if you're not trusting the server then it could have delayed, faked the replacement key, or otherwise messed around.
 
 *** How are we going to sync upvote/dismiss votes across devices??
