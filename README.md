@@ -16,3 +16,5 @@ It's prob fine to leave DMs to 2.0, but it'd be nice to have a clear plan so we 
 - CJC will look at exactly how Signal deals with multiple devices. Looks like you can't have more than one phone because it's all about phone number.
 
 - We'd need to think about  (a) key refresh/recovery and (b) multiple current keys for one account.
+
+Chris suggests using an extra layer of indirection for uid. Have a 'handle' that people make up themselves, and which has to be unique, and have a 'real' uid that's basically hidden from public view and which can't change, and is used on the server. Then people can change their handles AND their displaynames. Handles would have to be unique, but could be mutable; display names not necessarily. uids both unique and immutable.
