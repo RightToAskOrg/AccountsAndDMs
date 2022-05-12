@@ -17,4 +17,7 @@ It's prob fine to leave DMs to 2.0, but it'd be nice to have a clear plan so we 
 
 - We'd need to think about  (a) key refresh/recovery and (b) multiple current keys for one account.
 
-Chris suggests using an extra layer of indirection for uid. Have a 'handle' that people make up themselves, and which has to be unique, and have a 'real' uid that's basically hidden from public view and which can't change, and is used on the server. Then people can change their handles AND their displaynames. Handles would have to be unique, but could be mutable; display names not necessarily. uids both unique and immutable.
+Chris suggests using an extra layer of indirection for uid. Have a 'handle' that people make up themselves, and which has to be unique, and have a 'real' uid that's basically hidden from public view and which can't change, and is used on the server. Then people can change their handles AND their displaynames. Handles would have to be unique, but could be mutable; display names not necessarily. uids both unique and immutable. Possibly row number in the database - maybe this is already there by default?
+
+What if people lose their keys? Maybe post new keys and active/inactive requests on the BB.
+
