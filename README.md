@@ -1,5 +1,6 @@
 # AccountsAndDMs
-Cryptographic design for authentication and direct messaging
+Cryptographic design for authentication and direct messaging - very preliminary ideas and questions.
+
 
 VT sketch notes based on Thursday conversation - edits welcome.
 
