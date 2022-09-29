@@ -47,3 +47,32 @@ A Verified Primary account can delegate to a Verified Secondary account through 
 **Open Questions**
 * What permissions should Primary and Secondary accounts have in terms of voting and posting? Are they equivalent to normal accounts, or are they only permitted to respond?
 * Should delegate accounts show they are delegate accounts, i.e. Alice on Behalf of MP Bob when being viewed, possibly with some form of icon to show they are a primary/secondary account? (Side Note: Icons should not be permitted within usernames to avoid impersonation, this is somewhat challenging as you can't block unicode characters because some names need the extended character set.)
+
+### Account Moderation
+Accounts can be placed into a moderation state by an admin if for example they have posted a series of flagged posts. This could be automatic and would just constitute a pre-moderation setting. For example, if someone has three posts flagged by three different other users that account is put into pre-mod status. The user is free to continue using the site, but their posts will be queued until they are manually moderated.
+
+The workload from this should be fairly minimal, in that someone who has posted three items that are truly flagged is likely to have their account banned in any case, so any further posts don't need moderation.
+
+The moderation flag should be stored separate to the account status flag so accounts can move into and out of moderation without resetting their verification status. 
+
+Accounts that are banned should be kept but have a moderation flag that signifies they are banned and cannot log in. This not only helps with handling appeals, i.e. the account is never truly deleted so any mistakes can be undone, but would also act as a way of blocking email addresses. I.e. an email address on a banned account cannot be used to register a new account. One word of caution on this, the automatic ban of the email address should only happen if the account was verified. Otherwise someone could effectively get someone else's email address banned by using their email address and then getting banned. 
+
+A list of banned email addresses should be kept in addition to any automatic list. This should be a regex based list, since it will allow more flexible blocking, for example, email addresses from Russia or from particular domains. Consideration should be given to blocking temporary use email accounts like mailinator's free disposable email addresses.
+
+### User Account Structure
+* User Name (free text, no emoji, unique)
+* ID - internal random userID - not changeable
+* AccountType - int (basic, registered, verified etc)
+* ModStatus - default 0 (1 premod, 2 banned)
+
+
+Username needs to be unique, so people can for example establish a DM exchange using username as an index to the internal ID. It is likely that changing the username will be a requirement, although hopefully a rare one. The question is how to handle that:
+* Should usernames be available for reuse if someone no longer uses it, i.e. they changed their username, does their old username become available for use?
+* If old usernames are made available should there be a time delay before they are available for use? If so, how long?
+* If not, should all usernames associated with an account be permanently associated with it, i.e. if someone tries to initiate a DM key exchange with an old username should it work? I can see problems with this in that it would reveal old usernames. That might be an issue depending on why the username was changed. Let's imagine it was an offensive username or at least accidently offensive, history of that might what to be forgotten. Alternatively are old usernames simply retired?
+* If retiring or permanently associating usernames should there be a limit on the number of changes? I.e. 3 changes to prevent username squatting.
+
+If a user changes their email address their verification status is reset. They should be warned about this before starting to make the change.
+
+Are email addresses unique? I.e. only one user per email address?
+
