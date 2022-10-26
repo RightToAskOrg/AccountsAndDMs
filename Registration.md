@@ -7,17 +7,20 @@ The following user account types will be defined:
 7. **Verified Secondary** - Extended standard user account that has been linked to an MP's account, either via email verification or direct approval TBD
 9. **Verified Primary** - Verified as a parliamentary MP account via email
 
-Accounts effectively have escalating permissions with type. i.e. Basic can view but that is it, registered is an internal only status to handle the transfer from registered through to verified. 
+Accounts effectively have escalating permissions with type. i.e. Basic can view but that is it, registered is an internal only status to handle the transfer from registered through to verified.  Note that most people will spend almost no time in the state of registered but not verified. Indeed, it may not even be helpful to think of this as a separate state from 'basic'.
 
+VT: Also consider whether we might have a setting in which the person is verified as residing in a certain electorate, even if their identity isn't verified. Could be implemented as a badge rather than an account type (at the moment, verified secondary accounts are implemented as badges anyway, that is, as an extra property that is added to a standard account. This would probably also work for verified primaries, which would simply gain the badge as soon as they verified that email address at registration.)
 
 ## Permissions
-| Account Type | Read Posts | Create Posts  |  Upvote/Dismiss  |  Flag Posts  |  DM  | Authorise Delegate Account | Act as Delegate Account 
+| Account Type | Read Posts | Create Posts  |  Upvote/Dismiss  |  Answer Questions | Flag Posts  |  DM  | Authorise Delegate Account | Act as Delegate Account 
 | ------------- |:-------------:| :-------------: |:-------------: |:-------------:|:-------------:| :-----:|:-----:|
-| Basic      | :ballot_box_with_check: | :negative_squared_cross_mark: | :negative_squared_cross_mark: |:negative_squared_cross_mark: | :negative_squared_cross_mark: |  :negative_squared_cross_mark: |  :negative_squared_cross_mark: |
-| Registered  | :ballot_box_with_check: | :negative_squared_cross_mark: | :negative_squared_cross_mark: |:ballot_box_with_check: | :negative_squared_cross_mark: |  :negative_squared_cross_mark: |  :negative_squared_cross_mark: |
-| Verified | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: |:ballot_box_with_check: | :ballot_box_with_check: |  :negative_squared_cross_mark: |  :negative_squared_cross_mark: |
-| Verified Secondary | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: |:ballot_box_with_check: | :ballot_box_with_check: |  :negative_squared_cross_mark: | :ballot_box_with_check: |
-| Verified Primary |:ballot_box_with_check: | :ballot_box_with_check: |:ballot_box_with_check: |:ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :negative_squared_cross_mark: |
+| Basic      | :ballot_box_with_check: | :negative_squared_cross_mark: | :negative_squared_cross_mark: |   | :negative_squared_cross_mark: | :negative_squared_cross_mark: |  :negative_squared_cross_mark: |  :negative_squared_cross_mark: |
+| Registered  | :ballot_box_with_check: | :negative_squared_cross_mark: | :negative_squared_cross_mark: |   | :negative_squared_cross_mark: | :negative_squared_cross_mark: |  :negative_squared_cross_mark: |  :negative_squared_cross_mark: |
+| Verified | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: |  | :ballot_box_with_check: | :ballot_box_with_check: |  :negative_squared_cross_mark: |  :negative_squared_cross_mark: |
+| Verified Secondary | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: |  | :ballot_box_with_check: | :ballot_box_with_check: |  :negative_squared_cross_mark: | :ballot_box_with_check: |
+| Verified Primary |:ballot_box_with_check: | :ballot_box_with_check: |:ballot_box_with_check: |  | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :negative_squared_cross_mark: |
+ 
+VT: I changed 'Flag post' permission for plain Registered, so that it perfectly matches 'basic.'
 
 ## Pathway 
 How a user moves from the initial **Basic** account through to verified will be a matter for UI design. One option is to request registration at the start to encourage engagement, but with the downside of increased friction. The alternative is to allow browsing but require registration before interaction (posting/voting/flagging). This allows rapid access but creates friction when trying to act for the first time. There is an argument for saying that when installing there is an expectation of registration/friction, when there might not be when first trying to post.
