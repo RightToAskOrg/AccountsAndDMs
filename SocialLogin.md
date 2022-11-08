@@ -1,0 +1,5 @@
+# Social Login
+Social login is a form of federated login that uses social media platforms as identity providers. A number of platforms offer such services, including Google, Facebook, Twitter, GitHub, etc. The idea behind it is that users do not need to create dedicated accounts for each service, and only need to remember a single password - the password for the social media identity provider. Where the social media platform has additional information, for example, first and last name, age, etc. the receiving platform can populate the profile without requiring the user to provide the same information again. Some people believe it has a lower level of friction when compared to creating a dedicated account, although some caution should be attached to such a view, which we will discuss later. 
+
+## Underlying Technology
+Social login relies on OAuth 
