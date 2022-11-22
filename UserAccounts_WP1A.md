@@ -36,6 +36,8 @@ The current database schema does not always set primary or foreign key constrain
 
 > **For Consideration**: What should occur when a User is deleted or requests to be deleted. Should all of their data be deleted or should only personal information be deleted. Note: this does not impact on whether key constrains should be set, it just impacts on whether a ``ON DELETE CASCADE`` constraint is set.
 
+VT: I'd be inclined not to delete their questions unless we have to - otherwise someone can maliciously gather lots of up-votes (and dissuade others from writing the same question), then delete their account. I am not sure whether some people would feel that the right to deletion is important - we should certainly communicate clearly that you can't delete your questions even if you delete your account.
+
 Whether the primary key should be just an auto-incrementing integer or a UUID is open to some debate.
 
 #### Should a UUID be used as a primary key?
@@ -60,17 +62,25 @@ Whilst this may look like a lot of changes, most of it is the addition of foreig
 
 > **For Consideration**: Is there a one-to-one relationship between question and answer? If so, is there a one-to-one relationships between an answer and an MP? Or could an answer have more than one MP answer it? Alternatively could each question have multiple answers? If the latter is true, the answer table will need its own primary key, probably an auto increment integer called answer_id, and the questionid set as a foreign key constraint only and removed from the primary key of answer.
 
+VT: A question can have multiple answers, including multiple answers from one MP, or answers from multiple MPs.
+
 ### User Table
 Users has been modified to convert the UID to an auto increment integer. A new field has been added to hold the email address, irrespective or whether it is added manually or retrieved from a federated login. A password_sha256 field has been added to handle local logins. This should contain a 32 byte verification value calculated using the password_salt. Whether the salt is returned to the user for local calculation or the salted hashing is performed on the server remains to be decided. It is possible that these fields are blank depending on how registration is performed. 
 
 The verification_code and verification_code_expiry contain the last randomly generated verification code sent to the user. The expiry should be a time, for example, 30 minutes after the code was generated. When checking the code, if the current time exceeds this expiry the code should be rejected. [_**Note**: implementing this requires careful consideration of daylight saving time if the clock being used for comparison changes with daylight saving time. It is generally easier to use UTC instead of a local timezone for such comparisons._]
+
+VT: Can we just use UNIX time and ignore timezones altogether?
 
 ### Sessions
 Currently there is no concept of sessions within the back-end or the client app. Traditionally, apps would establish a session with the server though logging in, which would return some form of bearer-token that could be used to authenticate all subsequent requests until the session expires. By contrast, RTA uses the signing of messages as a means for authentication. This is sufficient when dealing with a very limited API, for example, adding a question, accepting an answer etc., however, it presents a problem for user account management. 
 
 For example, if a user wants to change their display name or email address is will be necessary to authenticate both the request to view the current data, and any follow-up requests to change it. It is possible that these requests could be signed as well, but that will make the processing of such requests more computationally expensive due to the signature checking required. 
 
+VT: The way it's implemented at the moment is that existing data is stored locally and change requests are signed. Agree this may be a computational burden.
+
 One option for establishing sessions would be to use Mutual Authentication of the TLS connection. The server could act as an internal Certificate Authority that signed certificate requests from the client. As such, when a user registers and generates their key pair they also generate a certificate signing request which is signed to create a certificate including their UID and their device_id.
 
+VT: Interesting. Let's discuss.
 
+A related conundrum (though not necessarily one with the same solution) is pagination of the questions - how does the server know which questions it has already served to which users, so as to avoid repeating them? At the moment, it doesn't - it just returns them all, but this will become infeasible as the number of questions grows large.
 
