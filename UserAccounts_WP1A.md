@@ -166,47 +166,43 @@ The following defines the different permissions the different users will have.
 | Verified Secondary | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: |  :negative_squared_cross_mark: | :ballot_box_with_check: |
 | Verified Primary |:ballot_box_with_check: | :ballot_box_with_check: |:ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :ballot_box_with_check: | :negative_squared_cross_mark: |
  
+
 > **For Consideration**: Should a Registered account be able to Flag posts? The argument against is the creation of fake accounts and spamming the moderators. The argument for is that if you can read something that causes you offence, should you have to verify yourself to flag it? It might be better to allow flagging easily but weight unverified user flags lower that verified user flags. 
 
 VT: I changed 'Flag post' permission for plain Registered, so that it perfectly matches 'basic.'
 
-VT: At the moment the authorisation for delegate accounts (or rather the acquisition of the badges) is through a 6-digit PIN sent in email. Certainly like the idea of possisbly endorsing directly in the app though.
+VT: At the moment the authorisation for delegate accounts (or rather the acquisition of the badges) is through a 6-digit PIN sent in email. Certainly like the idea of possibly endorsing directly in the app though.
 
 
 
 ### User Account Structure
 * DisplayName (free text, no emoji, non-unique)
 * uid - internal random userID - not changeable
-* username/handle (no spaces, equivalent to twitter @, unique)
+* handle (no spaces, equivalent to twitter @, unique)
 
 Account type and moderation status will be stored via badges.
-
-> **For Consideration**: Should handle and DisplayName be distinct, as it is on Twitter? Should handle/username be the email address? If so, that would make email address public, which probably isn't desirable. This is only of relevance for DMs which require some form of addressable value, it would be possible to use DisplayName, but generally addressable names don't include spaces
-
-> **For Consideration**: Should handle and DisplayName be distinct, as it is on Twitter? This is only of relevance for DMs which require some form of addressable value, it would be possible to use DisplayName, but generally addressable names don't include spaces
-
 * AccountType - int (basic, registered, verified etc)
 * ModStatus - default 0 (1 premod, 2 banned)
 
-Username needs to be unique, so people can for example establish a DM exchange using username as an index to the internal ID. It is likely that changing the username will be a requirement, although hopefully a rare one. The question is how to handle that:
-* Should usernames be available for reuse if someone no longer uses it, i.e. they changed their username, does their old username become available for use?
-* If old usernames are made available should there be a time delay before they are available for use? If so, how long?
-* If not, should all usernames associated with an account be permanently associated with it, i.e. if someone tries to initiate a DM key exchange with an old username should it work? I can see problems with this in that it would reveal old usernames. That might be an issue depending on why the username was changed. Let's imagine it was an offensive username or at least accidentally offensive, history of that might want to be forgotten. Alternatively are old usernames simply retired?
-* If retiring or permanently associating usernames should there be a limit on the number of changes? I.e. 3 changes to prevent username squatting.
+Handle needs to be unique, so people can for example establish a DM exchange using handle as an index to the internal ID. It is likely that changing the handle will be a requirement, although hopefully a rare one. The question is how to handle that:
+* Should handles be available for reuse if someone no longer uses it, i.e. they changed their handle, does their old handle become available for use?
+* If old handles are made available should there be a time delay before they are available for use? If so, how long?
+* If not, should all handles associated with an account be permanently associated with it, i.e. if someone tries to initiate a DM key exchange with an old handle should it work? I can see problems with this in that it would reveal old handles. That might be an issue depending on why the handle was changed. Let's imagine it was an offensive handle or at least accidentally offensive, history of that might want to be forgotten. Alternatively are old handles simply retired?
+* If retiring or permanently associating handles should there be a limit on the number of changes? I.e. 3 changes to prevent handle squatting.
 
-Username should not be position specific, i.e. VicHealthMinister, instead they should use BobSmithMP and have "Vic Health Minister" as their display name. 
+Handle should not be position specific, i.e. VicHealthMinister, instead they should use BobSmithMP and have "Vic Health Minister" as their display name. 
+
+Changes in handle do not need to be tracked. Existing DMs will  be using the UID internally, so won't be impacted. As such, the handle should be considered purely as a directory index, not as a direct address.
+
 
 ### Changes in DisplayName
-If DisplayName is not used for indexing uid for DMs, the changing of a DisplayName is potentially easier than changing a username. However, this does present a challenge for previously asked questions.
+If DisplayName is not used for indexing uid for DMs, the changing of a DisplayName is potentially easier than changing a username. However, this does present a challenge for previously asked questions. It is necessary that where DisplayName can be changed, the DisplayName that existed when the question was asked or answered needs to be shown. In the original design this isn't a problem because each question explicitly stores the DisplayName, however, that is not efficient and presents challenges in tracking when a user has changed their DisplayName and in terms of moderation.
 
-> **For Consideration**: Should DisplayName, or indeed username if used instead, be permanently tied to a question, or should it be dynamically loaded from the user account? The problem with the latter is that an MP leaving would lose their MP status, and may change both values, and in doing so answers will appear to come from people who are not MPs. Also, if an MP is the Health Minister and has that in the handle or display name, but they then become the Trade Minister, the questions they previously answered as the Health Minister would appear to be being answered by the Trade Minister. I suspect we are going to have to maintain a list of DisplayNames, and or handles, for each user and link questions and answers to the active DisplayName or handle as the time the question was asked or the answer was given. This presents a moderation challenge, in that in exceptional circumstances we would need to be able to change that - i.e. if it offensive - but that should be a moderation only task.
+A preferred approach is to store a record of all DisplayNames and link to the appropriate DisplayName ID that was used when the question or answer was created. This will allow the UI to show both the original DisplayName as well as the current DisplayName of the user. The UI for that will need consideration.
 
-VT: Unfortunately we probably do have to allow reuse, for example if someone registers VicHealthMinister and then gets reshuffled. Not clear this is needed for MVP though.
+When moderating DisplayNames, for example, to remove offensive terms, the DisplayName should be edited as opposed to replaced to ensure it is not shown in historic questions. Such changes should be restricted to moderators only. Standard user triggered DisplayNames should result in additional rows being constructed and the appropriate ID updated. This is reflected in the new database design. 
 
-If a user changes their email address their verification status is reset. They should be warned about this before starting to make the change.
-
-Are email addresses unique? I.e. only one user per email address?
-VT: The UI experts thought a lot about this and decided yes, just one. Obviously the official MP registration can be used to endorse multiple secondary accounts though.
+If a user changes their email address their verification status is reset. They should be warned about this before starting to make the change. Email addresses should be unique and limited to one user per email address. How to handle sub-addresses, for example, + addressing in Gmail, is a moderation decision. 
 
 ### Badge Types
 Badges will be globally defined instead of creating a badge per person for the same thing. i.e., there will be one Registered badge and one Verified badges in the badges table and then they will assigned to multiple users. The badges table is defined as follows:
@@ -237,15 +233,58 @@ Note, that when moving between user states, i.e. registered_user to verified_use
 
 
 ## User registration
-Default login - RTA managed.
+The default login approach, which will need to be provided irrespective of Social Login, is for RTA to establish and verify identity. The simplest approach to do this is to user email address and a verification email to check the user has access to the claimed email address. There are alternative ways of establishing identity, including phone number, and device IDs, some of which are detailed later. However, the most conventional is to use email address. The only reason this might need to be extended is if moderation becomes a problem caused by individuals creating multiple accounts, however, for the moment we will assume that is not a problem.
+
+### Is a password required?
+In an app only environment a password might not be required at all. For example, if authentication is achieved through the identity key pair, then why use a password at all? Many apps are moving towards a passwordless setting, either using PKI (FIDO) or using magic links. Magic links are term Slack uses for sending login links to a person's email address which when clicked logs them into their account. This may seem less secure, but if a single factor password reset option is provided, i.e., a reset email, then the magic link in an email does not degrade the security of the account. This is because an attacker could always perform a reset request and achieve the same outcome. 
+
+As such, there is an argument that no password is required. There is also an argument that passwords that are rarely used can be a usability problem. Password recall is linked to muscle memory, the password you use everyday is easy to remember, the password you setup for an account you haven't used for 12 months is extremely difficult to remember, likely leading to password resets in any case. If the password isn't going to be asked for on a regular basis, then there needs to be a secondary justification for its inclusion.
+
+### What is the purpose of the password?
+Where a password can be useful is as a source of entropy for local encryption of data that will be stored on a server. This is similar to how current E2E platform backup solutions, using the password or PIN to derive a local encryption key. However, such an approach is dependent on the server not knowing what the password is. As such, if there is an intention to use the password as the input to a Password-based Key Derivation Function (PKDF) the login process has to be different. 
+
+In particular, either a more complicated message exchange is required to hide the password, or a derived authentication key needs to created in addition to any encryption key. For example, generate a 256 bit key and split into two 128 bit keys, one for encryption, one for authentication. Then submit the random second half of the key as the password. This is a simple approach to the problem but is not the optimal approach.
+
+A more optimal approach would be the [Secure Remote Password Protocol](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol), which seeks to provide authentication without the server holding the secret. There are various protocols proposed, with varying support. Using such a protocol would require some additional thought as to how to also derive an encryption key, but is within the realms of possibility.
+
+### Can it be decided later?
+Switching from a traditional login to a local only login, i.e., one that does not share the password with the server is a not a backwards compatible change. Not just in terms of support previous apps, but also in terms of security. Once the password has been shared with the server it has zero value as a local source of entropy. As such, if a transition was made from traditional to crypto based all the passwords would need to be reset. This is a problem both in terms of usability, but also could create the suspicion of a hack, even though one had not taken place. 
+
+If a password or PIN is required after having adopted a traditional login approach it would be advisable to add it as an additional option, much like Signal does, rather than tie it to app login. 
+
+### Traditional Login Requirements
+If traditional login is used the password storage on the server should follow industry best practice [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html). 
+
+The verification email should be sent in such a way as to maximise the chances of quick delivery. This may require using a commercial provider. Consider sending such emails from a dedicated subdomain to help distinguish such emails from organisation emails. This is important for email deliverability, in which [Subdomains](https://mailertogo.com/blog/should-i-use-a-subdomain-to-send-email/) are treated distinctly (this isn't always the case, sometimes IP address is used as well, but it can help). As such, create subdomains for different types of email, i.e. security.righttoask.org, notification.righttoask.org, etc. This helps prevent different emails triggering blocks on other types of emails, i.e., if a lot of notification emails are sent they are more likely to get classified either as unimportant or spam, but you don't want your security emails falling under the same category.
+
+The size of the login code, i.e. 4, 6, 8 digits, should be calculated based on the lifetime of the code and the ability to brute force it. Note that a 4 digit code must always return 4 digits and traditionally starting codes with 0 can be problematic when generating them, since the leading zeros need to be manually added. As such, it may be that a 4 digit code actually only has 9,000 combinations as it will run from 1,000 through to 9,999. Alternative options would be to use 4 random word structures. These are both more secure, with higher entropy - assuming they are randomly generated from a large dictionary - and can be easier to transpose from a different device or share with someone else, for example, in the case of verifying a staffer account. 
+
+If random word codes are used suitable dictionaries can be found from the [EFF](https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases).
 
 ### Social Login
 Social login is a form of federated login that uses social media platforms as identity providers. A number of platforms offer such services, including Google, Facebook, Twitter, GitHub, etc. The idea behind it is that users do not need to create dedicated accounts for each service, and only need to remember a single password - the password for the social media identity provider. Where the social media platform has additional information, for example, first and last name, age, etc. the receiving platform can populate the profile without requiring the user to provide the same information again. Some people believe it has a lower level of friction when compared to creating a dedicated account, although some caution should be attached to such a view, which we will discuss later. 
 
-## Underlying Technology
-Social login relies on OAuth 
-_work in progress, additional notes to be added_
+#### Underlying Technology
+There are various variants of Social Login, some using proprietary approaches requiring custom libraries (Facebook). Excluding such proprietary approaches, there two open standards typically found in use by Social Login providers, OAuth and OpenID. Note, Facebook also implements some of the open standards but limits what can be done over the non-proprietary approach, in particular, what data can be collected. 
 
+##### OAuth
+There are two variants of OAuth, OAuth 1.0 and OAuth 2.0. Describing the differences between the two is beyond the scope of this document, but in short summary, OAuth 2.0 is a complete rewrite to help support more devices and simplify the signatures, as well as provide more fine-grained scoping. However, there has been some criticism of OAuth 2.0, and in fact OAuth 1.0, in terms of the lack of a strict standard and that if a service wishes to make use of OAuth it needs to register with the provider. This is a significant disadvantage as it requires custom code for each supported provider, which was not the original intention. 
+
+Fundamentally, OAuth is not an authentication protocol, [it is an Authorisation protocol](https://oauth.net/articles/authentication/). i.e., it allows a user to authorise an application to access some or all of the API as if it was being performed by the user. As such, it is primarily used for accessing resources, for example, accessing a Google Drive, Dropbox account, or sending and reading tweets. 
+
+When OAuth is used to authentication it is actually a pseudo-authentication protocol that derives assurance that the user is who they say they are on the basis that the service can access resources restricted to that user. However, it doesn't actually commit to provide any such assurance. It is quite possible that authorisation could have been granted via a browser that was already logged in and therefore does not assure user presence. 
+
+In the context of RTA there is a challenge to using OAuth based pseudo-authentication, namely that most such providers will be providing some form of access to resources. For example, Twitter, which provides an OAuth 1.0 end-point allows tweets to be read as part of the "authentication" flow. For a privacy concious app this is counter intuitive. Additionally, the primary information that RTA requires is the email address, which is sometimes protected more strictly. In the case of Twitter permission must be sought from Twitter to access the email address, requiring registering and complying with a series of policies to be approved. This presents an administration cost and may complicated rolling out new apps, particularly if any of the providers require app reviews (Facebook does in some instances).
+
+As such, it seems reasonable to dismiss using a pure OAuth approach for RTA. This would immediately preclude Twitter and since that is/was one of the primary alternative platforms its preclusion dramatically reduces the return on investing in developing Social Login.
+
+##### OpenID
+OpenID provides a true authentication protocol. Its aim is to request the server to provide an assertion that user is who they claim to be. It can achieve this using various methods, but fundamentally, the protocol is designed specifically for authentication. The most common form of OpenID is OpenID Connect (OIDC) which is OpenID run over OAuth 2.0. In some respects this can be considered to be a two-step process, the user authorises the service to access the Authentication API through OAuth 2.0, and then OpenID protocol authenticates the user.
+
+Support for OIDC is growing, however, each provider requires registration and may have slightly differences in how it handles messages. As such, custom code for each provider would be necessary. If Social Login was pursued it should only be via an OpenID solution. 
+
+##### Challenges
+One of the challenges is how to handle re-login, and how often should it occur. If it is used just during first registration the email address returned and stored by RTA could become stale, and not available for performing recovery. However, the login process is not user friendly, in particular the actual login with the provider has to be performed in a web browser, not within the App. This requires setting up callback URLs to return responses to the App and forces the user out of the app during registration, which may not be desirable. 
 
 ## User Verification
 Email verification can be done via either a link or a code. An email link that can be clicked to approve the registration is commonplace, but the risks of phishing attacks may raise some concerns. If a link is used, consideration should be given for using [App Links](https://developer.android.com/studio/write/app-link-indexing) on Android to allow the verification to be performed using the app rather than the browser. Either way, the UI needs to gracefully handle the verification. If we assume that registration and verification may not happen sequentially the app needs to handle the verification flow from potentially any screen. As such it must consider the following:
@@ -261,8 +300,87 @@ Email verification can be done via either a link or a code. An email link that c
 A Verified Primary account can delegate to a Verified Secondary account through some form of approval process, mostly likely digitally signing a request or through providing a security code similar to verification. It is probably best that such requests come from the Secondary account so there isn't a burden on the MP to perform too many management functions. Once delegated to, the Verified Secondary account should have similar or possible the same functionality as the primary. Currently it does not have permissions to delegate to further secondary accounts, which seems like a reasonable limitation.
 
 ## Account recovery
+Account recovery can be split into two functions, regaining access to a previously setup server account, and recovering previous settings and client data. The minimum viable product probably only requires the former, with the latter being nice but not essential.
+
+### Account Access Recovery
+The most basic approach to this is equivalent to a lost password recovery process. The user provides their email address - which must match a registered account - and then a reset code or link is sent to them. For consistency this should probably be a code. However, some caution needs to be used in terms of expiring the code if too many incorrect attempts are made. For example, if a 4 digit code were used and the code is expired after 3 incorrect attempts, there would approximately a 1 in 3,000 chance of an attacker successfully guessing the code. This is a problem if you have more than 3,000 accounts.
+
+Moving up to a 6 digit code helps, increasing it to approximately 1 in 300,000. However, this will not be sufficient if an unlimited number of recovery attempts can be requested, or there are a large number of users. Rate limiting on reset requests as well will help, for example,limiting it to 3 in a 24 hour period. Under the assumption that the person whose account it is should notice the erroneous reset requests within a day or two. However, this doesn't resolve the issue if there are a large number of accounts (rate limits cannot apply across distinct accounts). This is where a reset URL could be helpful as it allows a cryptographically secure random number to be used as the authorisation token. However, requiring the clicking of links may be undesirable. Possibly increasing the reset code beyond 6 digits could be useful. Or possibly, use a 4 random words approach or similar to increase entropy but maintain usability.
+
+Once the account reset is authorised it should follow the same configuration flow as a new user, i.e. the device creates a new key pair and downloads any available configuration data. It may be useful to notify the user that some information is not synced, for example, the previously dismissed questions, to avoid any confusion. Once DMs are provided there will be a need to warn the user that any messages in transit will be unreadable and that any verified security codes will be invalid for recipients, i.e. they will be warned the code/keys have changed. The standard initialisation process for the E2E DMs will need to be run to populate news keys on the server.
+
+At the end of this the user should have regained access to their account and be able to post and use the service under their previous identity.
+
+Note: If social login is used the email address previously obtained from the platform will be used. If that address is invalid there is likely to be no way of recovering access to the account. If a social login still exists with that email address it would be possible to login via that platform and re-establish identity. However, if a different platform with a different email address is used, the accounts cannot be linked and therefore cannot be recovered. Even if the same platform is used, but with a different email address, it is likely that it will not be recoverable. The exception would be if the platform provides an independent UID for the user that remains consistent and RTA stores it. However, this would require platform specific storage, which is adding additional complexity. 
+
+### Account Data Recovery
+Recovery of server-side stored data is trivial and a natural part of the syncing, i.e., display name syncing. However, the current design has upvote/dismiss data stored only locally. This presents a challenge in two scenarios:
+
+1. Loss of device
+2. Multiple devices linked to one account
+
+The two challenges present fundamentally different problems. A loss of device can only be recovered if the data is stored off the device, i.e. backed-up somewhere else. Storing off-device presents a security problem; how can the data be encrypted in a way that prevents the storage provider, whether that be RightToAsk or someone else, from viewing the contents and breaking the privacy of the voting system. In any case an encryption key is going to be required. The difference between the two scenarios is how that encryption key is generated and used. Once an encryption key has been generated the encrypted data can be stored on the RightToAsk server. In the case of a lost device this would not strictly need to be on a RightToAsk server, it could use platform backup services instead.
+
+#### Loss of device or move to new device
+In the case of a lost device, or moving to a new device, one option would be to rely on platform backups. For example, Android provides an (Auto Backup Feature)[https://developer.android.com/guide/topics/data/autobackup] which is claims is end-to-end encrypted using the PIN/Passphrase of the device. In this scenario provided that the files are stored in the app directory (which they should be) they will be backed-up and restored. However, this restore will only work if it is a Android-to-Android. i.e. if someone had an Android phone, lost it, then decided to switch to an iPhone there is no restoration path. Similarly, iOS provides platform back-ups or one could use CloudKit to manually configure cloud storage and recovery. Note, recovery might only be possible if iCloud backup has been enabled, otherwise the key required to recover the data might be lost.
+
+A similar problem can occur on Android. If EncryptedSharedPreferences are used I believe the key is not backed up and therefore the contents are not recoverable. This is sometimes discussed in errors with EncryptedSharedPreferences where the app has to disable auto-backup in order to get it to work. 
+
+However, in theory, the current setup would allow device recovery, assuming voting data is not stored in an EncryptedSharedPreferences/SecureStorage location on the device.
+
+Note also that Apple has recently announced that it too will move to E2E encrypted back-ups, resolving one prior concern ([Apple Announcement](https://www.apple.com/newsroom/2022/12/apple-advances-user-security-with-powerful-new-data-protections/)).
+
+
+#### Alternative Options
+
+##### How does signal do it?
+Signal backs up configuration data using a combination of a PIN, a secure enclave on the server, and limit on the number of incorrect tries. Whilst a neat solution it is clearly beyond the scope of what would be possibly for RightToAsk at this time. (Secure Value Recovery)[https://signal.org/blog/secure-value-recovery/]
+
+##### Generate a Key from a PIN/Password
+The simple approach is to generate a key from a PIN/Password using PBKDF, encrypt the configuration file and store it on the RightToAsk server. Whilst simple, the security of this is limited due to the relatively small amount of entropy. An offline attack from the server is going to be difficult to prevent, particularly in the case of a PIN. If a password were used it may be confusing to users to understand that the password is not recoverable and that if they lose it they will lose access to their backup/configuration. As such, whilst simple to implement, it may undermine the security goals to such an extent to make it undesirable.
+
+Additionally, any bespoke back-up service on RTA servers, using either a password or pin to derive a decryption key, will be materially weaker than Google's or Signal's approach. This is because RTA doesn't have Titan security chips or equivalent available on its servers to protect against brute-force attacks. However, it would allow syncing across devices.
+
+#### Multiple devices linked to one account
+This presents a fundamentally different problem as there is an ongoing synchronisation problem. However, by specifying this as a distinct problem it could be added as feature in the future and use a different methodology to the loss of device recovery. This functionality could be provided by requiring devices to encrypt their data files under the public keys of the other devices registered for their account and then storing that data on the RightToAsk server, so that each devices downloads the latest file.
+
+An easier approach might to provide this as an extension of the Direct Messaging functionality. Have a device send its updated configuration file to all other devices registered using the DM functionality, albeit with a flag to indicate it is a system message and therefore not shown to the user. This would save implementing additional crypto and would remove the synchronisation problem associated with multiple devices potentially updating their configuration files at the same time. In this method they would just be distinct messages and all the recipient needs to do is merge all the received files. (Merging should be fine as the operations are add only, i.e. the server won't allow a device to have both upvoted and dismissed a question - **note this means that the config file should only be appended after an operation is accepted by the server, so if two devices request different options at the same time only one will succeed. This should be default behaviour to ensure consistency between the server and the client. Otherwise a failed internet connection that results in a lost request could lead to the client showing the question has been dismissed/voted on, but in fact that not being the case on the server.**.
+
+#### Suggested Development Plan
+* Rely on platform backups initially to allow recovery after device loss.
+  * This should not require immediate changes unless EncryptedSharedPreferences are being used
+  * Monitor Apple's introduction of E2E backups
+* When implementing DMs provide functionality for sending encrypted system messages.
+* When implementing Multiple Devices use the DM functionality to send configuration file changes after each update
+  * Implement configuration file synchronisation
+  * Multiple device implementation may also require signing/approval of new devices by existing devices prior to synchronisation
+
+
+
+
+
+
+
 
 ## Support for E2E DMs
+Usage of libsignal as a basis for implementing E2E DMs is advised. Attempting to implement a custom protocol is likely to result in something materially worse and more likely to contain security errors. However, there are disadvantages to using libsignal. Support is lacking, as is cross-platform support, in particular Xamarin. To a large extent the implementation requires a certain amount of reverse engineering to determine exactly what needs to be stored. As such, the current proposed data storage is the current best effort, but may be subject to change as more advanced features are implemented/evaluated, which forms part of a different work package.
+
+The general structure is as follows:
+![Current DB Schema](./e2e_db.png )
+
+Much of it is self explanatory, but some fields may require some further explanation. In particular, currently this layout is framed as user orientated, whereas it will need to eventually be device orientated when multiple devices are supported. However, per device, the current layout captures the data storage requirements. Selected fields are explained in more detail below:
+* registrationId - is created on the client when first registering the user/device, and is apparently used to detect if the app has been re-installed [https://community.signalusers.org/t/what-are-registration-ids-used-for/1704](https://community.signalusers.org/t/what-are-registration-ids-used-for/1704). However, the explanation is currently lacking, but it appears as if it needs to be stored server-side as it is part of the PreKeyBundle that is assembled on the server.
+* identityPublicKey - this is the signal public identity key, which may or may not be compatible with the RTA key. TBC
+
+The remainder are fairly obvious, there are some restrictions on what happens when using a preKey or when updating SignedPreKeys (expires all existing preKeys), but they are beyond the scope of this work package.
+
+### Server Receipt of Key Bundles
+The server will need to receive bundles of keys generated by the client and break them into individual keys. This is preferred to storing the bundle as a single blob as the keys within teh bundle will be individually issued to new clients wishing to DM the user. 
+
+### Push Notifications
+Push Notifications will be implemented using Google Firebase Cloud Messaging (FCM). This will necessitate storing an additional FCM ID used as an address for the device. These are not permanent IDs, they can change over time, as such, the server must be able to update this value when the client notifies it of an updated value. Additionally, the client should implement a notification receiver to be alerted when the FCM ID changes, which can start the app and update the RTA server. This should happen in the background to ensure that in the case of a change in FCM ID the app doesn't become unavailable until it is restarted. 
+
+It is possible that the implementation of Push Notifications will be distinct from E2E DMs. It should be relatively easy to implement as could have uses outside of DMs, as such it would be advisable to implement Push Notifications separately to DMs. 
 
 ## Account Moderation
 This document provides an initial consideration of the need for accounts, how they could be realised and the purposes they should serve. It will initially outline why there is a need for accounts and then establish the properties that would be desirable from an account, with consideration for potential attack vectors. 
