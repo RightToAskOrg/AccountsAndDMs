@@ -38,6 +38,8 @@ The current database schema does not always set primary or foreign key constrain
 
 VT: I'd be inclined not to delete their questions unless we have to - otherwise someone can maliciously gather lots of up-votes (and dissuade others from writing the same question), then delete their account. I am not sure whether some people would feel that the right to deletion is important - we should certainly communicate clearly that you can't delete your questions even if you delete your account.
 
+AC: Foreign keys are good, no question. They are a constraint, so I think that it is an issue for what happens when a user is deleted, assuming we keep the questions (as seems reasonable). In particular, we may not want a foreign key for some of the users mentioned in questions - or else we could put in a stub user whenever a user is deleted.
+
 Whether the primary key should be just an auto-incrementing integer or a UUID is open to some debate.
 
 #### Should a UUID be used as a primary key?
@@ -60,13 +62,18 @@ The following diagrams shows an updated diagram with the relational links added,
 
 Whilst this may look like a lot of changes, most of it is the addition of foreign key constraints. Additionally, linking tables for badges and electorates have been added. Previously each Badge would duplicate the content for each user, when in fact the badge is static and is just awarded to the user. Similar to electorates, there is only one electorate that each user should reference, instead of each user having an entry for that electorate. 
 
+AC: Agreed entirely about deduplicating electorates and foreign keys. I am not so sure about badges, as there (at the moment) is very little duplication there so the extra references would take more space (and complexity) than the occasional duplication. Now that may change with your proposals for changing what badges are used for - e.g. adding registration status. Although I feel that that is a small enumeration that is probably better off as being a field of the user structure for efficiency.
+
 Changes to the existing structure could be achieved using Database Management software like [DBSchema](https://dbschema.com/), from which the entity relationship diagrams were created. The paid for version of DBSchema offers functionality to generate migration scripts. These work by first importing the existing database schema, making the necessary changes, and then exporting the migration scripts. These scripts should handle both the updating of the database structure as well as moving the data over to it. It would need testing in practice, but might provide a starting point for migration. If the database can be discarded and re-initialised, i.e., it is still in testing or development then that would be easier and the more advisable option. 
+
+AC: Much of this will be straight forward, the most tricky thing being the deduplication which shouldn't be that bad.
 
 ### User Table
 Users has been modified to convert the UID to an auto increment integer. A new field has been added to hold the email address, irrespective or whether it is added manually or retrieved from a federated login. A password_sha256 field has been added to handle local logins. This should contain a 32 byte verification value calculated using the password_salt. Whether the salt is returned to the user for local calculation or the salted hashing is performed on the server remains to be decided. It is possible that these fields are blank depending on how registration is performed. 
 
 The verification_code and verification_code_expiry contain the last randomly generated verification code sent to the user. The expiry should be a time, for example, 30 minutes after the code was generated. When checking the code, if the current time exceeds this expiry the code should be rejected. [_**Note**: implementing this requires careful consideration of daylight saving time if the clock being used for comparison changes with daylight saving time. It is generally easier to use UTC instead of a local timezone for such comparisons. Unix time is derived from UTC, so provided no timezones are applied it should be fine_]
 
+AC: Shudder. Very much agreed about UTC. I try *never* to use local time on a server as it always causes problems. Occasionally I stuff up and accidentally use a local time.
 
 
 ### Sessions
@@ -77,6 +84,8 @@ For example, if a user wants to change their display name or email address it wi
 Currently this is not a problem because of the single device architecture However, once multiple devices are supported it will be necessary to synchronise such data on start-up, since it could have been changed by another device. 
 
 VT: The way it's implemented at the moment is that existing data is stored locally and change requests are signed. Agree this may be a computational burden.
+
+AC: The signed versions are needed for many API calls so that it can be put on the bulletin board. Possibly everthing that is signed at the moment. This is likely to change in the moderate future, but the gains from sessions seem small in the near future so I don't think this is as high a priority as most of the other things.
 
 One option for establishing sessions would be to use Mutual Authentication of the TLS connection. The server could act as an internal Certificate Authority that signed certificate requests from the client. As such, when a user registers and generates their key pair they also generate a certificate signing request which is signed to create a certificate including their UID and their device_id.
 
@@ -96,6 +105,8 @@ proxy_set_header X-SSL-Client-S-DN   $ssl_client_s_dn;
 ```
 
 The Rust process to check that `X-SSL-Client-Verify=="SUCCESS` which determines if the mutual TLS was successful. Note, this will be essential because nginx may need to be configured to allow failed mTLS connections through for some requests, as such, `X-SSL-Client-Verify` may not always be SUCCESS.
+
+AC: Also there are some normal-browser stuff that won't have client certificates, such as the web question view (to enable people to generate links to questions in other things).
 
 The reason failed mTLS connections may need to be allowed through is to allow the initial registration request through, in which the mTLS has not yet been configured for that client. An alternative, and better albeit more complicated option would be to configure different locations with different settings. One would be specifically for registration in which failed mTLS connections would be accepted and passed on to Rust. Whilst the general location for all other requests would enforce successful mTLS and reject any connections that fail. For redundancy the `X-SSL-Client-Verify` should be checked in any case to protected against nginx misconfiguration. 
 
@@ -124,6 +135,8 @@ The following user account types will be defined:
 5. **Verified** - Verified account, their email account has been verified and they now have full standard user account privileges 
 7. **Verified Secondary** - Extended standard user account that has been linked to an MP's account, either via email verification or direct approval TBD
 9. **Verified Primary** - Verified as a parliamentary MP account via email
+
+AC: Badges at the moment are for MP primary or secondard, or organisation. One might have multiple ones of these, so a user could be multiple 3/5/7/9.
 
 Accounts effectively have escalating permissions with type. i.e. Basic can view but that is it, registered is an internal only status to handle the transfer from registered through to verified.  Note that most people will spend almost no time in the state of registered but not verified. Indeed, it may not even be helpful to think of this as a separate state from 'basic'.
 
@@ -154,6 +167,7 @@ insert into user_badges (user_uid,badge_uid) values (?,?)
 
 Where the `badge_uid` represents the type of badge being added, i.e. "Registered", "Verified", etc. These are shared types, with the mapping occurring in user_badges. As `user_uid` and `badge_uid` are composite primary keys any attempt to insert a duplicate would be rejected, thereby not requiring the guard query to check if it already exists.
 
+AC: I have tried to do things in a single transaction where possible (although may have stuffed up). Unfortunately there is a terrible issue with the bulletin board. Do we change the database before or after posting the change to the bulletin board? Ideally the bulletin board should have a rollback tied into the SQL transaction, but this makes it hard to separate the bulletin board from the main server db, which is a nice property. So I have tended to have first check to see if the query looks legal, if so post it to the bulletin board, and then try to actually do it, which may now be illegal again. So some of the legality checks are duplicated in a different transaction. Then we could (but currently don't) publish a repudiation to the bulletin board if it failed.
 
 ### Permissions
 The following defines the different permissions the different users will have.
