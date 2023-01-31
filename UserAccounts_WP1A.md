@@ -26,10 +26,14 @@ Currently the back-end has only partial support for a single user having multipl
 
 > **Recommendation 1**: The user schema should only contain data that is about the user and should not contain device data. Instead, create a Devices table which is linked to a user via the UID. This allows a one-to-many relationship between the user and their devices. This will also be required to support E2E DMs and Push Notifications, both of which will require device specific identifiers to be stored against a user.
 
+AC: Makes sense, but I don't think this is finalized yet so I haven't made this high priority.
+
 ### UID
 Currently the UID is equivalent to a username, for example, a handle or email address. Any user selected value should be anticipated to need to change, even if not fully supported on the front-end. For example, if a user selected UID contained a racist term or a swear word. Moderation may looks to remove that from the UID, which would present a problem if that value is being used throughout the database.
 
 > **Recommendation 2**: Change UID to be an internal-only UID that is not displayed to the user. It should be auto-generated to guarantee uniqueness and permanence, i.e. it never changes. As such, UID should be changed to ``INTEGER AUTOINCREMENT``. Any corresponding uses of UID in other tables would also need to be updated.
+
+AC: Done. The UID field still exists but is no longer the main key. An API to change UIDs is not available yet.
 
 ### Foreign Key Constraints and General Database Structure
 The current database schema does not always set primary or foreign key constraints. Such constraints help to maintain both referential integrity, as well as having a possible performance benefit. Specifically, the information provided via key constraints allows the database to optimise linking queries, as well as the searching of tables via the primary key. It also allows the ``ON DELETE CASCADE`` property to be configured. This will automatically delete tables that reference the primary key when deleting the record containing the primary key. For example, deleting a user will delete any badges that are associated with that user. This is not automatic, and could be selectively applied. For example, it might not be desirable to delete a question when deleting a user. Although that does need some consideration.
@@ -72,6 +76,8 @@ Changes to the existing structure could be achieved using Database Management so
 
 AC: Much of this will be straight forward, the most tricky thing being the deduplication which shouldn't be that bad.
 
+AC: Much of this is now done. The user_id key instead of UID is done, the foreign keys on user_id and question_id and others is done, the deduplication of electorates is done. The deduplication of badges is not done as they are not being used for registration status or moderation. The SQL migration turned out to be straight forward.
+
 ### User Table
 The User table has been modified to convert the UID to an auto increment integer. A new field has been added to hold the email address, irrespective of whether it is added manually or retrieved from a federated login. A password_sha256 field has been added to handle local logins. This should contain a 32 byte verification value calculated using the password_salt. Whether the salt is returned to the user for local calculation or the salted hashing is performed on the server remains to be decided. It is possible that these fields are blank depending on how registration is performed.
 
@@ -92,6 +98,8 @@ VT: The way it's implemented at the moment is that existing data is stored local
 AC: The signed versions are needed for many API calls so that it can be put on the bulletin board. Possibly everthing that is signed at the moment. This is likely to change in the moderate future, but the gains from sessions seem small in the near future so I don't think this is as high a priority as most of the other things.
 
 CJC: agreed, it is not a high-priority, not least because the fallback is always signatures. I suspect the number of API calls that will be non-bulletin board calls will start to grow rapidly, particularly post MVP - user management, moderation, synchronisation, etc. I'm also assuming the database is MySQL and using InnoDB, if it is MyISAM the table locking will be a problem very quickly and probably needs addressing now. Either way, not having sessions will significantly increase database load due to the repeated querying of the user table. There is also a security argument, in that without sessions replay attacks become easier. An attacker with a copy of a previously signed submission can replay it and have it accepted, there is no liveness test. If a TLS based session approach was adopted you know the client must have had access to the private key at the point the TLS session was started and cannot replay anyone else's submissions without also having their private key to establish a live TLS session. 
+
+AC: The DB is MariaDB, and InnoDB has been the default for ages I believe (10.2 looking it up). Replay attacks are indeed a serious issue.
 
 One option for establishing sessions would be to use Mutual Authentication of the TLS connection. The server could act as an internal Certificate Authority that signed certificate requests from the client. As such, when a user registers and generates their key pair they also generate a certificate signing request which is signed to create a certificate including their UID and their device_id.
 
@@ -130,6 +138,8 @@ Data that is stored in a session is not persistent, it will be lost during a ser
 
 _A related conundrum (though not necessarily one with the same solution) is pagination of the questions - how does the server know which questions it has already served to which users, so as to avoid repeating them? At the moment, it doesn't - it just returns them all, but this will become infeasible as the number of questions grows large._
 
+AC: We have a bad solution to this now, solved independently with tokens with some propoerties similar to sessions. I think it will have to change.
+
 ## User Accounts
 
 ### Need for accounts
@@ -152,6 +162,8 @@ Accounts effectively have escalating permissions with type. i.e. Basic can view 
 There may be added "privileges" or badges associated with an account, but they do not need to change the definition of an account. For example, a user could self-submit their electorate, which would define the electorate in the database. However, there is also the possibility of distributing QRCodes within electorates to allow a user to verify their electorate. The best approach to this would be through the use of badges, and having the issuing of badges distinct from user account management.
 
 Overall, badges would provide an easy way of defining the different types of account and allow easy adding and removing of badges. However, the current code for managing badges may need some minor updates. The existing code in [person.rs](https://github.com/RightToAskOrg/right_to_ask_server/blob/main/right_to_ask_api/src/person.rs) does not handle checks and updates in a single database transaction. It does not look like this would cause a critical failure, but it could in theory create some concurrency issues.
+
+AC: Oops, I stuffed up there. Both are now done in a single transaction.
 
 For example, it appears the following code checks if the badge is in the database in one transaction and then stores the badge in the database in a second distinct transaction. There is no guarantee of consistency between the first `is_in_database` result and when the `store_in_database` is called. It is likely that the first check could be combined into a single query. If not, then a single transaction should cover both queries to maintain consistency.
 
@@ -176,9 +188,15 @@ insert into user_badges (user_uid,badge_uid) values (?,?)
 
 Where the `badge_uid` represents the type of badge being added, i.e. "Registered", "Verified", etc. These are shared types, with the mapping occurring in user_badges. As `user_uid` and `badge_uid` are composite primary keys any attempt to insert a duplicate would be rejected, thereby not requiring the guard query to check if it already exists.
 
+AC: The below comment really has nothing to do with badges, it was just inspired by the discussion about transactions.
+
 AC: I have tried to do things in a single transaction where possible (although may have stuffed up). Unfortunately there is a terrible issue with the bulletin board. Do we change the database before or after posting the change to the bulletin board? Ideally the bulletin board should have a rollback tied into the SQL transaction, but this makes it hard to separate the bulletin board from the main server db, which is a nice property. So I have tended to have first check to see if the query looks legal, if so post it to the bulletin board, and then try to actually do it, which may now be illegal again. So some of the legality checks are duplicated in a different transaction. Then we could (but currently don't) publish a repudiation to the bulletin board if it failed.
 
 CJC: Why not optimistically change the database? The database is easy to revert, whereas the bulletin board is difficult. If the bulletin board fails you can delete the database entry or try again.
+
+AC: Well, hopefully you can revert the database (even ignoring a different user getting the temporarily-there values). In practice, the bulletin board dataase and the main database will often be on the same machine. If the database goes down in the middle of an update, it will probably take both down. So an error in the bulletin board occurs, the main database will probably be impossible to revert. One could hold the transaction open until the bulletin board has returned OK, but that is also problematic as
+* This means transactions will be locking the db for significantly longer, which exacerbates bottlenecks and makes the possibility of introducing a deadlock higher.
+* Some of the database updates require the hash from the bulletin board - such as the question id, or version.
 
 ### Permissions
 The following defines the different permissions the different users will have.
