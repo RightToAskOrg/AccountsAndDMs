@@ -114,6 +114,8 @@ iOS user tracking ways
     doesn't require a permission request for tracking
     works for the device regardless to Apple ID
 
+VT: This seems to be an effective way of enforcing a block on a person, assuming they use the same device.
+
 ######IDFA
 
     IDFA is an identifier of User (Advertisement ID for Apple ID)
