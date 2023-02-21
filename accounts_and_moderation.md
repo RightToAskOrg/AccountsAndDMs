@@ -96,13 +96,43 @@ Whilst a credit card is a strong identity check it is not practical for a settin
 ##### *Device ID*
 Given the mobile nature of the service, in that it is currently only accessible via an app, it would be possible to use a device identifier. For example, `Settings.Secure.ANDROID_ID` is a device/application specific identifier. It remains the same between uninstall and reinstall if the package stays the same and the same signing key is used on the APK. See [Android blog](https://android-developers.googleblog.com/2017/04/changes-to-device-identifiers-in.html). The ID will reset during a factory reset. 
 
+Accessible from Xamain via: System.Guid.NewGuid().ToString();
+
 If combined with Android SafetyNet it would be possible to ensure that the device is not an emulator and is a genuine Android device. This would prevent automated generation of fake devices. It would require Google Play Services to be installed, but so would Firebase Cloud Messaging, so that might already be a requirement. 
 
 This may require an app permission update if imposed later.
 
 iOS has a similar thing: [identifierForVendor](https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor) but apparently it resets when the user uninstalls and reinstalls the app. A better alternative is probably to store a unique ID in the keychain - we don't *think* this is going to be autodeleted when the app is uninstalled, but discussion is a [little unclear](https://developer.apple.com/forums/thread/72271) and [not getting clearer](https://developer.apple.com/forums/thread/36442). There's also a [device check](https://developer.apple.com/documentation/devicecheck). But overall keychain is probably the right choice.
 
+Notes on iOS specifically:
+
+iOS user tracking ways
+
+######IDFV
+
+    IDFV is an identifier of App + Device
+    doesn't require a permission request for tracking
+    works for the device regardless to Apple ID
+
+######IDFA
+
+    IDFA is an identifier of User (Advertisement ID for Apple ID)
+    requires a permission request for tracking
+    works for to Apple ID regardless to device
+
+######Key chain
+
+    allows to mark user (Apple ID) storing special value in their keychain
+    doesn't require a permission request for tracking
+    requires user to share keychain across iCloud
+
+
+
+
+
 A further downside would be if future expansion includes a web based version there would be no equivalent ID value. It would also not assist in account recovery.
+
+
 
 ##### *Third part login*
 Could consider Xamarin.Essentials Web Authenticator. This allows server to use third-party auth e.g. Google, Apple, FB, MS. Upside: much harder for malicious actors to generate multiple different accounts. Downside: dependent on those third parties. Ideally we'd use them (or an email address) for account establishment at most, and then use the established public keys.
