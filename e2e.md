@@ -22,6 +22,7 @@ Signal doesn't support syncing history, but it does synchronise messages across 
 * Messages to all target devices
 * Control Messages to all linked devices
 
+
 bundle these messages into a single data structure and send that to the server to be processed.
 
 #### Contact Syncing
@@ -35,8 +36,13 @@ This code must exist somewhere within the client application, but doesn't appear
 
 It appears this implemented in the library using the [PrimaryProvisioningCipher](https://github.com/signalapp/Signal-Android/blob/main/libsignal/service/src/main/java/org/whispersystems/signalservice/internal/crypto/PrimaryProvisioningCipher.java) for creating and the [SecondaryProvisioningCipher]() for receiving. The contents of message is defined in the [Proto](https://github.com/signalapp/libsignal-service-java/blob/master/protobuf/Provisioning.proto) object.
 
+#### Read Syncing
+Signal doesn't create notifications for messages already read. For example, if on the Desktop and it is open the read notification does not go off on your phone. However, if the message is not read on the Desktop for a period of time then the notification is sent to the device. I'm assuming this is being performed via some form of delayed notification syncing. In that the device currently active is somehow able to prevent other devices from receiving notifications. This isn't essential, and may not be desirable, but will require further consideration.
+
 ## Core Additional Functionality
 Whilst the library handles a lot of functionality the client performs a lot of management on the underlying key/sessions stores that will need to be implemented. For example, if a device switches to a new preKey the other devices will need to re-initialise their sessions. This requires that the old session is placed in stale state. It cannot be immediately deleted as there could be delayed messages still in transit. These stale sessions are held around for an unspecified amount of time, after which the client is free to start deleting them.
 
 This functionality is managed by the DeviceRecord, but there isn't an obvious reference implementation of DeviceRecord.
 
+## Staffer Accounts
+The general design permits staffers to act on behalf of MPs, would that functionality need to extend to DMs, i.e. would a staff need to be able to read the MPs DMs (not necessarily by default, but as an option)? If the answer is yes, we might want to consider using an alternative approach for multi-device, in that the signing of sub-keys by the primary key would permit potentially shared access.
