@@ -46,3 +46,41 @@ This functionality is managed by the DeviceRecord, but there isn't an obvious re
 
 ## Staffer Accounts
 The general design permits staffers to act on behalf of MPs, would that functionality need to extend to DMs, i.e. would a staff need to be able to read the MPs DMs (not necessarily by default, but as an option)? If the answer is yes, we might want to consider using an alternative approach for multi-device, in that the signing of sub-keys by the primary key would permit potentially shared access.
+
+## Crypto of Multiple Devices
+There are essentially two options for having multiple devices:
+1. Share the identity key material across all devices
+2. Each device retains a unique identity key and they are somehow linked
+
+Signal adopts option 1. However, this presents a number of problems:
+1. The private key has to be transferred to another device
+2. A single device cannot be revoked without changing the identity key across all devices, i.e., a staff couldn't be given access and then have access revoked without reinitialising all devices
+3. It is not clear how well the safety number checks work in the setting
+
+The last point is of particular interest. In a one-to-one conversation there is no trust in the server if you have verified your safety number correctly. However, that may not be the case when re-initialising a new identity key in a multi-device setting. For example, let's imagine a scenario where Alice has DeviceA and Device B. DeviceB is compromised by a malicious party who has also compromised the platform. Alice realises DeviceB has been lost and as precaution creates a new identity on DeviceA. However, Alice is entirely dependent on the platform behaving honestly to notify this change to her contacts. If the platform is compromised it can keep DeviceB active and as far as any contacts will know nothing has changed. Simultaneously the platform blocks Alice from contact any exist contacts, thereby preventing alerts about her safety number changing being shown to them. In effect, the compromised DeviceB can continue to impersonate Alice for as long as the platform allows. 
+
+It is not clear that this issue can be easily resolved, but it is worth noting in order to correctly evaluate alternatives.
+
+### Alternative Approach
+Instead of doing what signal does, we adopt the authorisation mechanism instead, with devices having unique identity keys. This would work using a similar approach to TLS certificates. If Alice has Primary Device A and wishes to authorise Device B to have DM access, Alice would perform the following procedure:
+
+1. DeviceB (having already registered and having its own identity key) creates a certificate signing request (CSR) that can be sent to DeviceA. This CSR is a standard x.509 CSR, which includes a public key certificate for DeviceB's identity key.
+2. DeviceB displays the CSR (CSR-B) as a QRCode. DeviceA scans the QRCode and reviews it.
+3. If DeviceA and the user authorise the request DeviceA creates a new subkey identity key pair (subKeyA), constructs a CSR (CSR-A) for that key and sends it to itself.
+4. DeviceA signs CSR-A with its primary identity key and store the result
+5. DeviceA uses subKeyA to sign CSR-B and return the Public Key Certificate to DeviceB.
+6. DeviceA sends subKeyA Public Key Certificate to the platform to be recorded in its record of active subKeyCerts. (For additional security a certificate transparency service could be used to record all subkeys generated)
+7. DeviceA sends the signed Public Key certificate of DeviceB to the platform to be recorded as a linked device.
+
+When a device wishes to send to DeviceA it performs the following:
+1. Sesame protocol as before, i.e. construct messages for any known devices and send to the platform. If the platform contains a different list of devices it will reject the message and return the full list of deviceIds and their corresponding public key certificates.
+2. The device examines each device certificate and checks that there is a corresponding subKeyCert available, signed by the primary device identity key, and not revoked. If no such certificate path can be found the sending is canceled and an error is shown (cannot send due to unauthorised devices).
+3. If a certificate path exists to the same identity key that it has previously seen it does not need to alert the user that a new device has been added or that the safety number has changed. It only need do that if the primary identity key changes. 
+
+If a device wishes to revoke access it should create a Signed Revocation Request which it sends to the platform. It should also delete the subKeyCert entry thereby preventing that device from being authorised in the future, and remove it from its device list. Thereby cutting of the linked device without the need to revoke the identity key. 
+
+### Advantages
+The biggest advantage of this approach is that it allows a single device to be linked to multiple accounts. i.e. if a staffer works across multiple offices they can have a single account that is linked to multiple other accounts. The other advantage is the ability to add and remove access without compromising the secrecy of the identity key.
+
+### Disadvantages
+It diverges from the signal implementation, however, it is still consistent with the Sesame standard. It is also not clear that the signal implementation actually delivers what is required (see above). The same issue of a compromised device with a compromised platform exists, in that it can still hide the revocation. Although one option would be to send the revocation notification directly to all contacts via an internal system message and receive confirmation to bypass the trust assumption on the platform to broadcast that information. 
