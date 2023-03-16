@@ -150,6 +150,7 @@ It should be noted that this method of determining the minimum viable account sy
 ### Verification / Badges / Banning / Censoring
 
 There are several somewhat orthogonal concepts that I think need to be orthogonal rather than conflated.
+
 * Verified email address : There should be two email address fields in the database - one that the user has requested, and
                            the latest verified. This allows one to change email, still vote on questions, and verify later.
 * Badges for MP sccount, org account, or secondary. One may have multiple such badges. The email address may or may not be the same
@@ -162,6 +163,7 @@ There are several somewhat orthogonal concepts that I think need to be orthogona
 
 ### Types of User Account
 The following user account types will be defined:
+
 1. **Basic** - The initial account type, no registration is required but extremely limited in functionality
 3. **Registered** - Intermediate account type that has no greater permissions, but has started the registration process by providing their email address
 5. **Verified** - Verified account, their email account has been verified and they now have full standard user account privileges
@@ -239,10 +241,12 @@ VT: At the moment the authorisation for delegate accounts (or rather the acquisi
 * handle (no spaces, equivalent to twitter @, unique)
 
 Account type and moderation status will be stored via badges.
+
 * AccountType - int (basic, registered, verified etc)
 * ModStatus - default 0 (1 premod, 2 banned)
 
 Handle needs to be unique, so people can for example establish a DM exchange using handle as an index to the internal ID. It is likely that changing the handle will be a requirement, although hopefully a rare one. The question is how to handle that:
+
 * Should handles be available for reuse if someone no longer uses it, i.e. they changed their handle, does their old handle become available for use?
 * If old handles are made available should there be a time delay before they are available for use? If so, how long?
 * If not, should all handles associated with an account be permanently associated with it, i.e. if someone tries to initiate a DM key exchange with an old handle should it work? I can see problems with this in that it would reveal old handles. That might be an issue depending on why the handle was changed. Let's imagine it was an offensive handle or at least accidentally offensive, history of that might want to be forgotten. Alternatively are old handles simply retired?
