@@ -147,6 +147,19 @@ Unfortunately one of the few things you can guarantee with the internet is that 
 
 It should be noted that this method of determining the minimum viable account system is specific to this context. In other contexts there may be additional requirements, for example, in finance there will be Know Your Customer requirements, in online shopping there might be delivery or payment requirements. However, in this context the primary objective is moderation and as such will be the factor we use to determine the minimum level of account system.
 
+### Verification / Badges / Banning / Censoring
+
+There are several somewhat orthogonal concepts that I think need to be orthogonal rather than conflated.
+* Verified email address : There should be two email address fields in the database - one that the user has requested, and
+                           the latest verified. This allows one to change email, still vote on questions, and verify later.
+* Badges for MP sccount, org account, or secondary. One may have multiple such badges. The email address may or may not be the same
+                           as the verified email address. If  one has verfied an email address that matches a badge, should one have
+			   to register as the MP as well? Problem: what if the email address is electorate@gov.au... having
+			   access to it in the past doesn't give you access in the future. Maybe if you have verified in the last 24 hours?
+* Banned : The account has been blocked by moderators. Can be unblocked by moderators. Blocking/unblocking should not change above fields.
+* Display name censored : The display name should not be shown. Set by moderators. Unset by???
+* UID censored : The UID should not be shown. Set by moderators. Unset by???
+
 ### Types of User Account
 The following user account types will be defined:
 1. **Basic** - The initial account type, no registration is required but extremely limited in functionality
@@ -156,6 +169,8 @@ The following user account types will be defined:
 9. **Verified Primary** - Verified as a parliamentary MP account via email
 
 AC: Badges at the moment are for MP primary or secondard, or organisation. One might have multiple ones of these, so a user could be multiple 3/5/7/9.
+
+AC: Suggested doing of this to take into account other things in section above.
 
 Accounts effectively have escalating permissions with type. i.e. Basic can view but that is it, registered is an internal only status to handle the transfer from registered through to verified.  Note that most people will spend almost no time in the state of registered but not verified. Indeed, it may not even be helpful to think of this as a separate state from 'basic'.
 
