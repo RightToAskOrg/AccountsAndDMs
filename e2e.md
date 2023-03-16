@@ -72,12 +72,15 @@ Instead of doing what signal does, we adopt the authorisation mechanism instead,
 6. DeviceA sends subKeyA Public Key Certificate to the platform to be recorded in its record of active subKeyCerts. (For additional security a certificate transparency service could be used to record all subkeys generated)
 7. DeviceA sends the signed Public Key certificate of DeviceB to the platform to be recorded as a linked device.
 
-When a device wishes to send to DeviceA it performs the following:
+VT: Strongly agree subkey signing is much better than sharing the private key. Are you envisaging that each DeviceB gets a separate subKeyA, or that one subKeyA is used to sign all requests? I guess the latter makes revocation (somewhat) easier, but we could also just revoke DeviceB certs.
+
+When a device wishes to send to DeviceA it performs the following: (VT: DeviceB? Or just Alice generally?)
+
 1. Sesame protocol as before, i.e. construct messages for any known devices and send to the platform. If the platform contains a different list of devices it will reject the message and return the full list of deviceIds and their corresponding public key certificates.
 2. The device examines each device certificate and checks that there is a corresponding subKeyCert available, signed by the primary device identity key, and not revoked. If no such certificate path can be found the sending is canceled and an error is shown (cannot send due to unauthorised devices).
 3. If a certificate path exists to the same identity key that it has previously seen it does not need to alert the user that a new device has been added or that the safety number has changed. It only need do that if the primary identity key changes. 
 
-If a device wishes to revoke access it should create a Signed Revocation Request which it sends to the platform. It should also delete the subKeyCert entry thereby preventing that device from being authorised in the future, and remove it from its device list. Thereby cutting of the linked device without the need to revoke the identity key. 
+If a device wishes to revoke access it should create a Signed Revocation Request which it sends to the platform. It should also delete the subKeyCert entry thereby preventing that device from being authorised in the future, and remove it from its device list. Thereby cutting off the linked device without the need to revoke the identity key. 
 
 ### Advantages
 The biggest advantage of this approach is that it allows a single device to be linked to multiple accounts. i.e. if a staffer works across multiple offices they can have a single account that is linked to multiple other accounts. The other advantage is the ability to add and remove access without compromising the secrecy of the identity key.
