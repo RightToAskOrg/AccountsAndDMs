@@ -147,7 +147,23 @@ Unfortunately one of the few things you can guarantee with the internet is that 
 
 It should be noted that this method of determining the minimum viable account system is specific to this context. In other contexts there may be additional requirements, for example, in finance there will be Know Your Customer requirements, in online shopping there might be delivery or payment requirements. However, in this context the primary objective is moderation and as such will be the factor we use to determine the minimum level of account system.
 
-### Verification / Badges / Banning / Censoring
+### Deletion of users
+
+It is desirable for privacy reasons to be able to delete a user and associated information. It is desired for accountability reasons to have
+a public bulletin board that lets people verify that the past has not been altered by the server operators. This is a conflict.
+
+Deleting directly personal information from the database is mostly a straight forward thing - delete everything associated with a user other than
+* The person's votes (for privacy reasons how people voted are not recorded by the server, so can't be deleted. The person will have affected the vote tallies, but even if we did record votes to back these out, it would be the opposite of privacy to delete a user and then announce a changed set of vote tallies). The server does record which questions a user has voted on to prevent multiple votes; this should of course be deleted.
+* The questions that were originally written by the user but which have been endorsed and/or extended by other people. This would be a major fail as a central functionality is to steer people who are asking similar questions to instead endorse an existing one, at which point it is equally owned by them. However the field in the question of who originally posed the question should be deleted.
+
+Deleting this information from the bulletin board is more problematic as it can break the chain of verification. Mechanistically this is done using the censorship methodology. 
+* User account creation and name changes and badges are stored on the BB, and can be censored without major problems.
+* Votes are not recorded on the bulletin board currently. Encrypted voted may be stored on the bulletin board in the future. To preserve privacy, the intention is to do bulk merging and decryption. To preserve this privacy (and to prevent the terrible anti-privacy feature of changing tallies when someone is deleted) they cannot be deleted from the bulletin board. Fortunately they are encrypted and generally not a privacy problem.
+* Question creation and answering and editing and reporting is currently stored on the bulletin board, along with the uid of the person doing so and a signature. Questions not voted on are straight forward to remove. Questions endorsed by other people are no longer uniquely associated with one person and so are, as in the database, not deletable. However the personal information associated with this should be deleted. In particular, instead of storing the uid of the user in the bulletin board, this could be converted to a node in the bulletin board associated with the user. Deleting these nodes then would automatically remove the association of the uid with the question.
+
+It is not clear about deletion of answers. Does a sitting MP making a public answer to a public question have a right to have the answer forgotten?
+
+### Verification / Badges / Banning / Censoring 
 
 There are several somewhat orthogonal concepts that I think need to be orthogonal rather than conflated.
 
@@ -156,7 +172,10 @@ There are several somewhat orthogonal concepts that I think need to be orthogona
 * Badges for MP sccount, org account, or secondary. One may have multiple such badges. The email address may or may not be the same
                            as the verified email address. If  one has verfied an email address that matches a badge, should one have
 			   to register as the MP as well? Problem: what if the email address is electorate@gov.au... having
-			   access to it in the past doesn't give you access in the future. Maybe if you have verified in the last 24 hours?
+			   access to it in the past doesn't give you access in the future. Compromise decided upon : if you have verified 
+			   as your email address in the last 24 hours and not changed since. If you are verifying your email address
+			   as above and it is a known MP email address then the email should be sent directly... not sure how this should be handled by
+			   the bulletin board.
 * Banned : The account has been blocked by moderators. Can be unblocked by moderators. Blocking/unblocking should not change above fields.
 * Display name censored : The display name should not be shown. Set by moderators. Unset by???
 * UID censored : The UID should not be shown. Set by moderators. Unset by???
