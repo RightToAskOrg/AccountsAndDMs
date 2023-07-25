@@ -72,8 +72,6 @@ Instead of doing what signal does, we adopt the authorisation mechanism instead,
 6. DeviceA sends subKeyA Public Key Certificate to the platform to be recorded in its record of active subKeyCerts. (For additional security a certificate transparency service could be used to record all subkeys generated)
 7. DeviceA sends the signed Public Key certificate of DeviceB to the platform to be recorded as a linked device.
 
-VT: Strongly agree subkey signing is much better than sharing the private key. Are you envisaging that each DeviceB gets a separate subKeyA, or that one subKeyA is used to sign all requests? I guess the latter makes revocation (somewhat) easier, but we could also just revoke DeviceB certs.
-
 When a device wishes to send to DeviceA it performs the following: (VT: DeviceB? Or just Alice generally?)
 
 1. Sesame protocol as before, i.e. construct messages for any known devices and send to the platform. If the platform contains a different list of devices it will reject the message and return the full list of deviceIds and their corresponding public key certificates.

@@ -169,16 +169,18 @@ There are several somewhat orthogonal concepts that I think need to be orthogona
 
 * Verified email address : There should be two email address fields in the database - one that the user has requested, and
                            the latest verified. This allows one to change email, still vote on questions, and verify later.
-* Badges for MP sccount, org account, or secondary. One may have multiple such badges. The email address may or may not be the same
+* Badges for MP account, org account, or secondary. One may have multiple such badges. The email address may or may not be the same
                            as the verified email address. If  one has verfied an email address that matches a badge, should one have
 			   to register as the MP as well? Problem: what if the email address is electorate@gov.au... having
 			   access to it in the past doesn't give you access in the future. Compromise decided upon : if you have verified 
-			   as your email address in the last 24 hours and not changed since. If you are verifying your email address
+			   as your email address in the last 24 hours and not changed since. Revocations still need to demonstrate current access (even if you've recently demonstrated it). If you are verifying your email address
 			   as above and it is a known MP email address then the email should be sent directly... not sure how this should be handled by
-			   the bulletin board.
+			   the bulletin board. Answer: probably by declaring who they're verified to represent without (re)publishing the email address.
 * Banned : The account has been blocked by moderators. Can be unblocked by moderators. Blocking/unblocking should not change above fields.
-* Display name censored : The display name should not be shown. Set by moderators. Unset by???
-* UID censored : The UID should not be shown. Set by moderators. Unset by???
+* Display name censored : The display name should not be shown. Set by moderators. Unset by moderators, but how? Notified if altered?
+* Handle censored : The handle should not be shown. Set by moderators. Unset by moderators, but how? Notified if altered?
+
+People can continue existing DM conversations when either their display name or their handle is censored. Display some indicator text like "[under moderation]." Can you start a DM conversation with someone whose handle is censored? Yes because, for example, if they've posted something you can click their profile and tap the 'DM this person' button. But you can't search for their handle/Display Name if censored.
 
 ### Types of User Account
 The following user account types will be defined:
@@ -236,6 +238,7 @@ AC: Well, hopefully you can revert the database (even ignoring a different user 
 
 ### Permissions
 The following defines the different permissions the different users will have.
+**TODO: rewrite based on characteristics in verification/banning/censoring. Add a field in the Question-Answer data structure that allows you to choose which of your badges you are 'speaking in the capacity of' at this time. This would be verified at the time of upload and stored as a string.
 
 | Account Type | Read Posts | Create Posts  |  Upvote/Dismiss  |  Answer Questions | Flag Posts  |  DM  | Authorise Delegate Account | Act as Delegate Account
 | ------------- |:-------------:| :-------------: |:-------------: |:-------------:|:-------------:| :-----:|:-----:|:-----:|
